@@ -2072,6 +2072,7 @@ class Trainer:
             model = self.model
 
         if self.is_fsdp_enabled:
+            logging.warning(self.accelerator.state.fsdp_plugin) #debug todo raus
             load_fsdp_model(self.accelerator.state.fsdp_plugin, self.accelerator, model, resume_from_checkpoint)
             return
 
