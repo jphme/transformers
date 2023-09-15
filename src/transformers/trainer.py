@@ -2071,6 +2071,10 @@ class Trainer:
         if model is None:
             model = self.model
 
+        if self.is_fsdp_enabled:
+            load_fsdp_model(self.accelerator.state.fsdp_plugin, self.accelerator, model, resume_from_checkpoint)
+            return
+
         config_file = os.path.join(resume_from_checkpoint, CONFIG_NAME)
         adapter_weights_file = os.path.join(resume_from_checkpoint, ADAPTER_WEIGHTS_NAME)
         adapter_safe_weights_file = os.path.join(resume_from_checkpoint, ADAPTER_SAFE_WEIGHTS_NAME)
@@ -2126,8 +2130,6 @@ class Trainer:
                     load_result = model.load_state_dict(state_dict, strict=True)
                     # release memory
                     del state_dict
-            elif self.is_fsdp_enabled:
-                load_fsdp_model(self.accelerator.state.fsdp_plugin, self.accelerator, model, resume_from_checkpoint)
             else:
                 # We load the model state dict on the CPU to avoid an OOM error.
                 if self.args.save_safetensors and os.path.isfile(safe_weights_file):
